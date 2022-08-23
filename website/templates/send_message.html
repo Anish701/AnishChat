@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}Send {{recipient.username}}{%
+endblock %} {% block content %} 
+
+<br/>
+<br/>
+<br/>
+<br/>
+
+
+<h3 align="center">Send Message to {{recipient.first_name}}</h1>
+  <form method="POST">
+    <textarea name="send" id="send" class="form-control"></textarea>
+    <br />
+    <div align="center">
+      <button type="submit" class="btn btn-primary">Send</button>
+    </div>
+  </form>
+
+<br/>
+<br/>
+<br/>
+<br/>
+
+<h3 align="center">Messages sent to {{recipient.first_name}}</h1>
+
+
+{% endblock %}
