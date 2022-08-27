@@ -1,0 +1,163 @@
+{% extends "base.html" %} {% block title %}Message {{recipient.username}}{% endblock %}
+{% block content %} 
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"></script>
+</head>
+<br/>
+<br/>
+
+<body>
+    <h1 align="center">{{recipient.first_name}}</h1>
+    <br/>
+    <ul class="list-group list-group-flush">
+        <div class = "x">
+        <li class="list-group-item">
+        </li>
+        </div>
+    </ul>
+    <!--<form id="xxx">
+    <textarea name="send" id="send" class="form-control"></textarea>
+    <br />
+    <div align="center">
+        <button type="submit" class="btn btn-primary">Send</button>
+    </div>
+    </form> -->
+    <button style="float:right" type="submit" class="btn btn-primary" id="send">Send</button>
+    <input style="float: right" placeholder="Type Message Here" id="messageInput" />
+
+    <script>
+        //gets variables passed to template and converts to js
+        //msgs3 is msg.id ---> msg.sender_id (id of sender)
+        //msgs4 is msg.id ---> msg.body (text)
+        var recId = {{ recipient.id | tojson }};
+        var msgs3 = {{m3 | tojson }}
+        var msgs4 = {{m4 | tojson }}
+
+        //socket
+        const socket = io();
+        
+        //finds div elements
+        let messageContainer = document.querySelector('.x')
+
+        //when enter is hit on input, socket emits the message to the backend
+        //... sendMessage function or @socketio.on('message')
+        let messageInput = document.getElementById("messageInput")
+        messageInput.addEventListener("keypress", (e) => {
+            //if event key is the enter key
+            if (e.which === 13) {
+                if (messageInput.value){
+                    socket.emit("message", messageInput.value, recId, {{user.id}})
+                    messageInput.value = ""
+                }
+            }
+        })
+
+        //when send button clicked, socket emits the message to the backend
+        //... sendMessage function or @socketio.on('message')
+        let messageButton = document.getElementById("send")
+        messageButton.addEventListener("click", function() {
+            if (messageInput.value){
+                socket.emit("message", messageInput.value, recId, {{user.id}})
+                messageInput.value = ""
+            }
+        })
+
+        //displays all of the messages previously sent
+        for(const [key, value] of Object.entries(msgs4))
+        {
+            let messageElement = document.createElement("li")
+            messageElement.className = "list-group-item"
+            messageElement.innerText = value
+            let x = document.createElement("button")
+            x.id = 'delete'
+            x.innerHTML = '<span aria-hidden="true">&times;</span>'
+            x.type='submit'
+            x.className='close'
+            //key is the message Id
+            x.value=key
+            //messages sent are on right, recieved are on left
+            if (msgs3[key] == {{current_user.id}})
+            {
+                messageElement.style = 'text-align: right;'
+                x.style="position: relative; bottom: 40px; float: right;"
+            }
+            else
+            {
+                messageElement.style = 'text-align: left'
+                x.style="position: relative; bottom: 40px; float: left;"
+            }
+            messageContainer.appendChild(messageElement)
+            messageContainer.appendChild(x)
+        }
+
+        //recieves input from sendMessage function from the backend
+        socket.on('message', (message) => {
+            //the message variable recieved from backend sendMessage is an array of 3
+            var text = message[0]
+            var recId1 = message[1]
+            var senderId1 = message[2]
+            //for correct sender and recipient, displays the new messages
+            if ((recId1 == recId && senderId1 == {{user.id}}) || (recId1 == {{user.id}} && senderId1 == recId))
+            {
+                let messageElement = document.createElement("li")
+                messageElement.className = "list-group-item"
+                messageElement.innerText = text
+                let x = document.createElement("button")
+                x.innerHTML = '<span title="You may need to click twice to delete new messages" aria-hidden="true">&times;</span>'
+                x.type='submit'
+                x.className='close'
+                x.id='delete1'
+                if (recId1 == {{user.id}})
+                {
+                    messageElement.style = 'text-align: left'
+                    x.style="position: relative; bottom: 40px; float: left;"
+                }
+                else
+                {
+                    messageElement.style = 'text-align: right'
+                    x.style="position: relative; bottom: 40px; float: right;"
+                }
+                messageContainer.appendChild(messageElement)
+                messageContainer.appendChild(x)
+                //if the close button is clicked on any newly loaded message
+                //then the window will reload and the newly loaded msgs will become
+                //the old/previous msgs which can be deleted
+                //so users have to click twice to delete newly loaded msgs
+                //once to reload window and then another to delete
+                let del = document.querySelectorAll('[id=delete1]').forEach(element=> 
+                element.addEventListener("click", function() {
+                    window.location.reload()
+                }))
+            }
+        })
+
+        //deletes previous/old messages when the close button is clicked
+        //emits the delete message's value, which is just the message ID
+        let messageDelete = document.querySelectorAll('[id=delete]').forEach(element=> 
+        element.addEventListener("click", function() {
+            console.log(element.value)
+            var clicker = {{ current_user.id | tojson }}
+            socket.emit("deleteMessage", element.value, recId, clicker)
+        }))
+
+        //from the backend deleteMessage function
+        // after the deleteMessage function deletes msg it will emit to this
+        // redirect function, which will essentially refresh the browser
+        // for the user who clicked delete
+        // the other user will have to refresh page in order to have that msg deleted
+        socket.on('redirect', function (data) {
+            if({{current_user.id}} == data.clicker)
+            {
+                window.location = data.url;
+            }
+        });
+
+    </script>
+</body>
+{% endblock %}

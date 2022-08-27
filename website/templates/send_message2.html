@@ -1,0 +1,60 @@
+{% extends "base.html" %} {% block title %}Send2 {{recipient.username}}{%
+endblock %} {% block content %} 
+
+<br/>
+
+<h3 align="center">Message History with {{recipient.first_name}}</h1>
+<ul class="list-group list-group-flush" id="message">
+  {% for msg in messages|reverse %}
+  <li class="list-group-item">
+    {% if msg.sender_id == user.id %}
+    <form style="float: right" align="right" action="" method="POST">
+      <button
+        type="submit"
+        class="close"
+        id="del1"
+        name="del1"
+        value="{{msg.id}}"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </form>
+    <div style="float: right" align="right">
+      {{msg.body}}
+    </div>
+    {% else %}
+    <div style="float: left" align="right">
+      {{msg.body}}
+    </div>
+    <form style="float: left" align="right" action="" method="POST">
+      <button
+        type="submit"
+        class="close"
+        id="del2"
+        name="del2"
+        value="{{msg.id}}"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </form>
+    {% endif %}
+    <!-- <div style="float: right" align="right">
+      {{msg.timestamp.strftime("%m/%d/%Y")}}
+    </div> -->
+  </li>
+  {% endfor %}
+</ul>
+
+<br/>
+<br/>
+<br/>
+
+<h3 align="center">Send Message to {{recipient.first_name}}</h1>
+  <form method="POST">
+    <textarea name="send" id="send" class="form-control"></textarea>
+    <br />
+    <div align="center">
+      <button type="submit" class="btn btn-primary">Send</button>
+    </div>
+  </form>
+{% endblock %}

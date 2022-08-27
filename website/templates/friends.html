@@ -1,0 +1,96 @@
+{% extends "base.html" %} {% block title %}Friends{% endblock %} {% block
+content %}
+<h1 align="center">Friends</h1>
+<ul class="list-group list-group-flush" id="friend">
+  {% for person in user.followed %} {% if person.is_following(user) %}
+  <li class="list-group-item">
+    {{ person.first_name }}
+    <button type="button" class="close" onClick="deleteFriend({{ person.id }})">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <button
+      type="button"
+      class="close"
+      onClick="window.location.href='{{ url_for('views.profile', first_name=person.first_name) }}';"
+    >
+      View Profile
+    </button>
+
+    {% if person.is_following(user) %}
+    <button
+      type="button"
+      class="close"
+      onClick="window.location.href='{{ url_for('views.send_message', recipient=person.username) }}';"
+    >
+      Message
+    </button>
+    {% endif %}
+  </li>
+  {% endif %} {% endfor %}
+</ul>
+<br />
+<br />
+<br />
+<h3 align="center">Requests</h1>
+<ul class="list-group list-group-flush" id="friend">
+  {% for person in user.followers %} {% if not user.is_following(person) %}
+  <li class="list-group-item">
+    {{ person.first_name }}
+    <form style="float: right" align="right" action="" method="POST">
+      <button
+        type="submit"
+        class="close"
+        id="decline"
+        name="decline"
+        value="1{{person.id}}"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </form>
+    <form style="float: right" align="right" action="" method="POST">
+      <button
+        type="submit"
+        class="close"
+        id="accept"
+        name="accept"
+        value="{{person.id}}"
+      >
+        Accept
+      </button>
+    </form>
+  </li>
+  {% endif %} {% endfor %}
+</ul>
+<br />
+<br />
+<br />
+<h3 align="center">Pending</h1>
+<ul class="list-group list-group-flush" id="friend">
+  {% for person in user.followed %} {% if not person.is_following(user) %}
+  <li class="list-group-item">
+    {{ person.first_name }}
+    <button type="button" class="close" onClick="deleteFriend({{ person.id }})">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <button
+      type="button"
+      class="close"
+      onClick="window.location.href='{{ url_for('views.profile', first_name=person.first_name) }}';"
+    >
+      View Profile
+    </button>
+  </li>
+  {% endif %} {% endfor %}
+</ul>
+<br />
+<br />
+<br />
+<h3 align="center">Add Friend by Username</h1>
+<form method="POST">
+  <textarea name="friend" id="friend" class="form-control"></textarea>
+  <br />
+  <div align="center">
+    <button type="submit" class="btn btn-primary">Add Friend</button>
+  </div>
+</form>
+{% endblock %}
