@@ -33,7 +33,8 @@ def create_app():
     from .models import User, Note
     
     #create the database
-    create_database(app)
+    with app.app_context():
+        db.create_all()
 
     #register outside login components
     login_manager = LoginManager()
@@ -47,7 +48,3 @@ def create_app():
     return app
 
 #create the database
-def create_database(app):
-    if not path.exists('/website' + DB_NAME):
-        db.create_all(app=app)
-        print('Created Database!')
